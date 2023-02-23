@@ -1,0 +1,154 @@
+@startuml classes
+
+class "LoginDto" as dto.login {
+    +readonly email: string
+    +readonly password: string
+}
+class "AuthController" as auth.controller {
+    -authService: AuthService
+
+    +registration(userDto: CreateUserDto)
+    +login(loginDto: LoginDto)
+}
+class "AuthGuard" as auth.guard {
+    -jwtService: JwtService
+    -reflector: Reflector
+
+    +canActivate(context: ExecutionContext)
+}
+class "AuthService" as auth.service {
+    -jwtService: JwtService
+    -userService: UsersService
+
+    +registration(userDto: CreateUserDto)
+    +login(loginDto: LoginDto)
+    -generateToken(user: User)
+    -validateToken(loginDto: LoginDto)
+}
+
+class "AuthModule" as auth.module {}
+
+class "AuthorsService" as authors.service {
+    -authorRepository: typeof Author
+
+    +createAuthors(authorsNames: string[])
+}
+class "AuthorsModule" as authors.module {}
+
+class "CreateBookDto" as dto.createBook {
+    +name: string
+    +genres: string[]
+    +authors: string[]
+    +description: string
+}
+class "BooksController" as books.controller {
+    -booksService: BooksService
+
+    +getAllBooks()
+    +download(response)
+    +getBookById(id: number)
+    +createBook(bookDto: CreateBookDto)
+    +deleteBookById(id: number)
+}
+class "BooksService" as books.service {
+    -bookRepository: typeof Book
+    -genresService: GenresService
+    -authorsService: AuthorsService
+
+    +getAllBooks()
+    +getBookById(id: number)
+    +getBookInfoById(id: number)
+    +createBook(bookDto: CreateBookDto)
+    +deleteBookById(id: number)
+    +createCsv()
+    +private deleteExportData(filePath: string)
+}
+class "BooksModule" as books.module {}
+
+class "GenresService" as genres.service {
+    -genreRepository: typeof Genre
+
+    +getAllGenres()
+    +createGenres(genresNames: string[])
+    +findGenreByName(genreName: string)
+}
+class "GenresModule" as genres.module {}
+
+class "CreateUserDto" as dto.createUser {
+    +email: string
+    +password: string
+    +role_name: keyof typeof UserRoles
+}
+enum "UserRoles" as enum.userRoles {
+    ADMIN
+    USER
+}
+class "UsersController" as users.controller {
+    -userService: UsersService
+
+    +getAllUsers()
+    +getUserFavoriteBooks(request)
+    +changeUserRole(id: number, role: keyof typeof UserRoles)
+    +deleteUserByEmail(email: string)
+    +addFavoriteBook(bookId: number, request)
+    +deleteFavoriteBook(bookId: number, request)
+}
+class "UsersService" as users.service {
+    -userRepository: typeof User
+    -bookService: BooksService
+
+    +getAllUsers()
+    +getUserByEmail(email: string)
+    +createUser(userDto: CreateUserDto)
+    +deleteUserByEmail(email: string)
+    +addFavoriteBook(userid: number, bookId: number)
+    +getUserFavoriteBooks(userId: number)
+    +deleteFavoriteBook(userid: number, bookId: number)
+    +changeUserRole(userId: number, newRole: keyof typeof UserRoles)
+}
+class "UsersModule" as users.module {}
+
+class "AppModule" as app.module {}
+
+app.module    <-- auth.module
+auth.module   <-- users.module
+auth.module   <-- auth.controller
+auth.module   <-- auth.service
+auth.module   <-- auth.guard
+auth.module   <-- dto.login
+
+
+app.module    <-- authors.module
+authors.module<-- authors.service
+authors.module<-- dto.createAuthor
+
+
+app.module    <-- genres.module
+genres.module <-- genres.service
+
+
+app.module    <-- books.module
+books.module  <-- auth.module
+books.module  <-- authors.module
+books.module  <-- genres.module
+books.module  <-- books.controller
+books.module  <-- books.service
+books.module  <-- dto.createBook
+ 
+app.module    <-- users.module
+users.module  <-- auth.module
+users.module  <-- books.module
+users.module  <-- users.controller
+users.module  <-- users.service
+users.module  <-- dto.createUser
+
+package postgresDB <<Database>> {
+
+}
+
+postgresDB .. users.service
+postgresDB .. books.service
+postgresDB .. authors.service
+postgresDB .. genres.service
+
+@enduml

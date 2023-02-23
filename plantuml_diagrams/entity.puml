@@ -1,0 +1,62 @@
+@startuml entities
+entity  "users" as  users {
+    *id : int unique auto_increment primary key;
+    --
+    email : varchar(255) unique not null;
+    password : varchar(255) not null;
+    role_name : varchar(255) not null;
+}
+
+entity "genres" as genres {
+    *id : int unique auto_increment primary key;
+    --
+    name: varchar(255) not null;
+}
+
+entity "book_genres" as book_genres {
+    id: int unique auto_increment primary key;
+    --
+    genreId: int foreign key;
+    bookId: int foreign key;
+}
+
+entity "books" as books {
+    id: int unique auto_increment primary key;
+    --
+    name: varchar(255) not null;
+    description: varchar(255) not null;
+}
+
+entity "authors" as authors {
+    *id : int unique auto_increment primary key;
+    --
+    name: varchar(255) not null;
+}
+
+entity "book_authors" as book_authors {
+    id: int unique auto_increment primary key;
+    --
+    authorId: int foreign key;
+    bookId: int foreign key;
+}
+
+entity "favorite_books" as favorite_books {
+    id: int unique auto_increment primary key;
+    --
+    userId: int foreign key;
+    bookId: int foreign key;
+}
+
+users  ||--|{ favorite_books
+
+favorite_books ||--|{ books
+
+books  ||--|{ book_authors
+
+books  ||--|{ book_genres
+
+book_genres ||--|{ genres
+
+book_authors ||--|{ authors
+
+@enduml
