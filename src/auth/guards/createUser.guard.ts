@@ -1,7 +1,6 @@
 import {
   CanActivate,
   ExecutionContext,
-  HttpException,
   Injectable,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -19,6 +18,10 @@ export class CreateUserGuard implements CanActivate {
     const req = context.switchToHttp().getRequest();
 
     const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      req.body.role_name = UserRoles.USER;
+      return true;
+    }
     const [bearer, token] = authHeader.split(' ');
     if (bearer !== 'Bearer' || !token) {
       req.body.role_name = UserRoles.USER;
